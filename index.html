@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Real ID Card Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: white;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ffd700, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .app-header p {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .card-stage {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto 25px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== REALISTIC CARD ===== */
+        .real-card {
+            width: 100%;
+            aspect-ratio: 1.586 / 1;
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 
+                0 1px 2px rgba(0,0,0,0.15),
+                0 4px 8px rgba(0,0,0,0.15),
+                0 8px 16px rgba(0,0,0,0.15),
+                0 16px 32px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+            background: white;
+            color: #222;
+        }
+
+        .real-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.4) 0%,
+                rgba(255,255,255,0.1) 25%,
+                rgba(255,255,255,0) 40%,
+                rgba(255,255,255,0) 60%,
+                rgba(255,255,255,0.1) 75%,
+                rgba(255,255,255,0.3) 100%
+            );
+            z-index: 50;
+            pointer-events: none;
+            border-radius: 14px;
+        }
+
+        .hologram-stripe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255,215,0,0.3) 20%, 
+                rgba(255,255,255,0.5) 40%, 
+                rgba(255,215,0,0.3) 60%, 
+                transparent 100%
+            );
+            z-index: 40;
+            pointer-events: none;
+        }
+
+        /* ===== OFFICIAL ID - FRONT ===== */
+        .id-front {
+            background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 14px 16px 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .id-front-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #1a472a;
+            padding-bottom: 6px;
+            flex-shrink: 0;
+        }
+
+        .id-front-logo-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .id-seal {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #1a472a 0%, #2d6a4f 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 900;
+            border: 2px solid #ffd700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+
+        .id-org-text {
+            line-height: 1.2;
+        }
+
+        .id-org-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #1a472a;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .id-org-sub {
+            font-size: 8px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .id-chip {
+            width: 32px;
+            height: 24px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4ba 50%, #d4af37 100%);
+            border-radius: 5px;
+            border: 1px solid #b8860b;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .id-chip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15%;
+            right: 15%;
+            height: 1px;
+            background: #b8860b;
+            transform: translateY(-50%);
+        }
+
+        .id-chip::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 20%;
+            bottom: 20%;
+            width: 1px;
+            background: #b8860b;
+            transform: translateX(-50%);
+        }
+
+        .id-front-body {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .id-photo-section {
+            flex-shrink: 0;
+            width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .id-photo-box {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border: 2px solid #adb5bd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .id-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .id-photo-box.has-image img {
+            display: block;
+        }
+
+        .id-photo-box.has-image .id-ph-placeholder {
+            display: none;
+        }
+
+        .id-ph-placeholder {
+            font-size: 28px;
+            opacity: 0.3;
+        }
+
+        .id-photo-file {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .id-photo-label {
+            font-size: 7px;
+            text-align: center;
+            color: #999;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .id-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow: hidden;
+            justify-content: flex-start;
+        }
+
+        .id-field {
+            line-height: 1.15;
+            flex-shrink: 0;
+        }
+
+        .id-field-label {
+            font-size: 7px;
+            text-transform: uppercase;
+            color: #aaa;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            margin-bottom: 1px;
+        }
+
+        .id-field-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #222;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .id-field-value.sm {
+            font-size: 12px;
+        }
+
+        .id-field-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .id-field-row .id-field {
+            flex: 1;
+        }
+
+        .id-signature-line {
+            margin-top: auto;
+            border-top: 1px solid #ddd;
+            padding-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .id-signature-text {
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+            font-size: 15px;
+            color: #333;
+            font-style: italic;
+            line-height: 1.2;
+            min-height: 18px;
+        }
+
+        .id-signature-label {
+            font-size: 6px;
+            color: #bbb;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+        }
+
+        .id-front-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1.5px solid #1a472a;
+            min-height: 28px;
+        }
+
+        .id-barcode {
+            height: 22px;
+            background: repeating-linear-gradient(
+                90deg,
+                #222 0px,
+                #222 2px,
+                transparent 2px,
+                transparent 4px,
+                #222 4px,
+                #222 5px,
+                transparent 5px,
+                transparent 7px,
+                #222 7px,
+                #222 9px,
+                transparent 9px,
+                transparent 10px,
+                #222 10px,
+                #222 12px,
+                transparent 12px,
+                transparent 14px
+            );
+            width: 110px;
+            opacity: 0.85;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .id-card-number {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: #1a472a;
+            letter-spacing: 1.5px;
+            text-align: right;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        /* ===== CARD BACK ===== */
+        .id-back {
+            background: linear-gradient(180deg, #f0f2f5 0%, #e9ecef 100%);
+            padding: 12px 16px 10px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .id-back-magstripe {
+            position: absolute;
+            top: 14px;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: linear-gradient(180deg, 
+                #1a1a1a 0%, 
+                #2d2d2d 30%, 
+                #1a1a1a 50%, 
+                #2d2d2d 70%, 
+                #1a1a1a 100%
+            );
+            z-index: 5;
+        }
+
+        .id-back-content {
+            margin-top: 36px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow: hidden;
+        }
+
+        .id-back-text {
+            font-size: 7px;
+            color: #777;
+            line-height: 1.4;
+            text-align: justify;
+        }
+
+        .id-back-text strong {
+            color: #555;
+            font-size: 7px;
+        }
+
+        .id-back-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+
+        .id-back-field {
+            background: rgba(255,255,255,0.7);
+            border: 1px solid #ced4da;
+            border-radius: 3px;
+            padding: 4px 5px;
+        }
+
+        .id-back-field-label {
+            font-size: 6px;
+            text-transform: uppercase;
+            color: #aaa;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 1px;
+        }
+
+        .id-back-field-value {
+            font-size: 10px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .id-back-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-shrink: 0;
+            padding-top: 6px;
+        }
+
+        .id-qr-placeholder {
+            width: 38px;
+            height: 38px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            color: #bbb;
+            text-align: center;
+            line-height: 1.2;
+            flex-shrink: 0;
+        }
+
+        .id-contact-info {
+            text-align: right;
+            font-size: 7px;
+            color: #999;
+            line-height: 1.5;
+        }
+
+        /* ===== VIP GOLD CARD - COMPLETELY FIXED ===== */
+        .vip-front {
+            background: linear-gradient(135deg, #1a0f0a 0%, #2d1b0f 50%, #1a0f0a 100%);
+            padding: 12px 16px 10px;
+            display: flex;
+            flex-direction: column;
+            color: #d4af37;
+            height: 100%;
+        }
+
+        .vip-front::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(212,175,55,0.03) 2px,
+                rgba(212,175,55,0.03) 4px
+            );
+            pointer-events: none;
+        }
+
+        .vip-header {
+            text-align: center;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .vip-shield {
+            width: 44px;
+            height: 50px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e4ba 50%, #d4af37 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            margin: 0 auto 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 900;
+            color: #1a0f0a;
+            box-shadow: 0 0 15px rgba(212,175,55,0.3);
+        }
+
+        .vip-title {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        .vip-diamonds {
+            font-size: 10px;
+            letter-spacing: 2px;
+            margin-bottom: 2px;
+            line-height: 1;
+        }
+
+        .vip-sub {
+            font-size: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            line-height: 1.2;
+        }
+
+        .vip-body {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            align-items: flex-start;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .vip-photo-wrap {
+            flex-shrink: 0;
+            width: 75px;
+            height: 95px;
+            position: relative;
+        }
+
+        .vip-photo {
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #d4af37;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .vip-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .vip-photo.has-image img {
+            display: block;
+        }
+
+        .vip-photo.has-image .vip-ph-placeholder {
+            display: none;
+        }
+
+        .vip-ph-placeholder {
+            font-size: 28px;
+            opacity: 0.3;
+        }
+
+        .vip-file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .vip-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .vip-info-block {
+            line-height: 1.2;
+        }
+
+        .vip-field-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.6;
+            margin-bottom: 2px;
+        }
+
+        .vip-field-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f4e4ba;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vip-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(212,175,55,0.3);
+            position: relative;
+            z-index: 2;
+            flex-shrink: 0;
+        }
+
+        .vip-id-num {
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+        }
+
+        .vip-issue-date {
+            font-size: 9px;
+            opacity: 0.7;
+        }
+
+        /* ===== FAN CARD ===== */
+        .fan-front {
+            background: linear-gradient(180deg, #f5f5f5 0%, #ffffff 100%);
+            padding: 12px 14px 10px;
+            color: #333;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fan-header {
+            text-align: center;
+            margin-bottom: 6px;
+            flex-shrink: 0;
+        }
+
+        .fan-title {
+            font-size: 12px;
+            font-weight: 900;
+            color: #444;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .fan-subtitle {
+            font-size: 7px;
+            color: #c00;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            line-height: 1.3;
+        }
+
+        .fan-body {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .fan-photo-box {
+            width: 68px;
+            height: 85px;
+            background: #eee;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .fan-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .fan-photo-box.has-image img {
+            display: block;
+        }
+
+        .fan-photo-box.has-image .fan-ph-placeholder {
+            display: none;
+        }
+
+        .fan-ph-placeholder {
+            font-size: 24px;
+            opacity: 0.3;
+        }
+
+        .fan-file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .fan-details {
+            flex: 1;
+            font-size: 9px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        .fan-row {
+            margin-bottom: 1px;
+        }
+
+        .fan-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 6px;
+            color: #888;
+        }
+
+        .fan-value {
+            font-weight: 600;
+            color: #222;
+            font-size: 10px;
+        }
+
+        .fan-footer {
+            font-size: 6px;
+            color: #999;
+            line-height: 1.3;
+            margin-top: 5px;
+            padding-top: 4px;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+
+        /* ===== REMOVE BUTTONS ===== */
+        .remove-photo-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            background: #dc3545;
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .photo-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .photo-container.has-image .remove-photo-btn {
+            display: flex;
+        }
+
+        .real-card.print-ready .remove-photo-btn {
+            display: none !important;
+        }
+
+        /* ===== CONTROLS ===== */
+        .flip-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .flip-btn {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .flip-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+
+        .design-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 5px 0 15px;
+            margin-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .design-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .design-chip {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid transparent;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .design-chip.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.3);
+        }
+
+        .design-chip.official {
+            background: linear-gradient(135deg, #1a472a, #2d6a4f);
+            color: white;
+        }
+
+        .design-chip.vip {
+            background: linear-gradient(135deg, #1a0f0a, #3d2317);
+            color: #d4af37;
+        }
+
+        .design-chip.fan {
+            background: linear-gradient(135deg, #f5f5f5, #ffffff);
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .editor-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            max-width: 450px;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .editor-panel h3 {
+            color: #222;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .editor-group {
+            margin-bottom: 10px;
+        }
+
+        .editor-group label {
+            display: block;
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .editor-group input,
+        .editor-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fafafa;
+            transition: all 0.2s;
+        }
+
+        .editor-group input:focus,
+        .editor-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .upload-trigger {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f2ff 100%);
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-trigger:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-style: solid;
+            border-color: transparent;
+        }
+
+        .upload-trigger:hover span {
+            color: white !important;
+        }
+
+        .upload-trigger input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-trigger .up-icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .upload-trigger .up-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .upload-trigger .up-hint {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            color: white;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+        }
+
+        .action-btn.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        /* PRINT */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .app-header, .design-bar, .flip-controls, .editor-panel {
+                display: none !important;
+            }
+            .card-stage {
+                max-width: 340px;
+                margin: 20px auto;
+            }
+            .real-card {
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border: 1px solid #ccc;
+                page-break-inside: avoid;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .remove-photo-btn {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .id-front {
+                padding: 12px 14px 8px;
+            }
+            .id-photo-section {
+                width: 80px;
+            }
+            .id-field-value {
+                font-size: 12px;
+            }
+            .id-field-value.sm {
+                font-size: 11px;
+            }
+            .id-org-name {
+                font-size: 11px;
+            }
+            .id-barcode {
+                width: 90px;
+                height: 18px;
+            }
+            .id-card-number {
+                font-size: 9px;
+            }
+            .vip-photo-wrap {
+                width: 65px;
+                height: 82px;
+            }
+            .vip-title {
+                font-size: 12px;
+            }
+            .vip-shield {
+                width: 38px;
+                height: 44px;
+                font-size: 14px;
+            }
+            .vip-field-value {
+                font-size: 14px;
+            }
+            .fan-photo-box {
+                width: 60px;
+                height: 75px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-header">
+    <h1>Real ID Card Studio</h1>
+    <p>Professional designs with front & back</p>
+</div>
+
+<div class="design-bar">
+    <div class="design-chip official active" onclick="switchDesign('official')">Official ID</div>
+    <div class="design-chip vip" onclick="switchDesign('vip')">Gold VIP</div>
+    <div class="design-chip fan" onclick="switchDesign('fan')">Fan Card</div>
+</div>
+
+<div class="flip-controls">
+    <button class="flip-btn active" onclick="showSide('front')">Front Side</button>
+    <button class="flip-btn" onclick="showSide('back')">Back Side</button>
+</div>
+
+<div class="card-stage">
+
+    <!-- OFFICIAL FRONT -->
+    <div class="real-card id-front" id="card-official-front">
+        <div class="hologram-stripe"></div>
+        <div class="id-front-header">
+            <div class="id-front-logo-area">
+                <div class="id-seal" id="off-seal">ID</div>
+                <div class="id-org-text">
+                    <div class="id-org-name" id="off-org">REPUBLIC OF AMERICA</div>
+                    <div class="id-org-sub" id="off-org-sub">National Identity Card</div>
+                </div>
+            </div>
+            <div class="id-chip"></div>
+        </div>
+        <div class="id-front-body">
+            <div class="id-photo-section">
+                <div class="photo-container" id="off-photoWrap">
+                    <div class="id-photo-box" id="off-photoBox">
+                        <span class="id-ph-placeholder">👤</span>
+                        <img id="off-img" src="" alt="Photo">
+                        <input type="file" class="id-photo-file" accept="image/*" onchange="handlePhoto('off', event)">
+                    </div>
+                    <button class="remove-photo-btn" onclick="removePhoto('off', event)">×</button>
+                </div>
+                <div class="id-photo-label">Official Photo</div>
+            </div>
+            <div class="id-details">
+                <div class="id-field">
+                    <div class="id-field-label">Surname</div>
+                    <div class="id-field-value" id="off-surname">LEWIS</div>
+                </div>
+                <div class="id-field">
+                    <div class="id-field-label">Given Names</div>
+                    <div class="id-field-value" id="off-given">DEAN MICHAEL</div>
+                </div>
+                <div class="id-field">
+                    <div class="id-field-label">Date of Birth</div>
+                    <div class="id-field-value sm" id="off-dob">15 JUN 1993</div>
+                </div>
+                <div class="id-field-row">
+                    <div class="id-field">
+                        <div class="id-field-label">Sex</div>
+                        <div class="id-field-value sm" id="off-sex">M</div>
+                    </div>
+                    <div class="id-field">
+                        <div class="id-field-label">Nationality</div>
+                        <div class="id-field-value sm" id="off-nation">USA</div>
+                    </div>
+                </div>
+                <div class="id-field">
+                    <div class="id-field-label">Place of Birth</div>
+                    <div class="id-field-value sm" id="off-pob">NEW YORK, NY</div>
+                </div>
+                <div class="id-signature-line">
+                    <div class="id-signature-text" id="off-sig">Dean Lewis</div>
+                    <div class="id-signature-label">Signature of Holder</div>
+                </div>
+            </div>
+        </div>
+        <div class="id-front-footer">
+            <div class="id-barcode"></div>
+            <div class="id-card-number" id="off-idnum">ID-USA-2026-884192</div>
+        </div>
+    </div>
+
+    <!-- OFFICIAL BACK -->
+    <div class="real-card id-back hidden" id="card-official-back">
+        <div class="hologram-stripe"></div>
+        <div class="id-back-magstripe"></div>
+        <div class="id-back-content">
+            <div class="id-back-text">
+                <strong>THIS CARD IS THE PROPERTY OF THE ISSUING AUTHORITY.</strong> It must be surrendered upon demand. 
+                The holder is subject to all laws and regulations governing the use of this identification document. 
+                Any alteration, falsification, or misuse constitutes a criminal offense.
+            </div>
+            <div class="id-back-fields">
+                <div class="id-back-field">
+                    <div class="id-back-field-label">Date of Issue</div>
+                    <div class="id-back-field-value" id="off-issue">12 MAY 2026</div>
+                </div>
+                <div class="id-back-field">
+                    <div class="id-back-field-label">Date of Expiry</div>
+                    <div class="id-back-field-value" id="off-expiry">12 MAY 2036</div>
+                </div>
+                <div class="id-back-field">
+                    <div class="id-back-field-label">Authority</div>
+                    <div class="id-back-field-value" id="off-auth">IDLAND GOV</div>
+                </div>
+                <div class="id-back-field">
+                    <div class="id-back-field-label">Document No.</div>
+                    <div class="id-back-field-value" id="off-docnum">DL-2026-001</div>
+                </div>
+            </div>
+            <div class="id-back-footer">
+                <div class="id-qr-placeholder">QR<br>CODE</div>
+                <div class="id-contact-info">
+                    <strong>EMERGENCY CONTACT</strong><br>
+                    Phone: +1 (555) 000-0000<br>
+                    www.idcard.gov<br>
+                    If found, please return
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIP FRONT - FIXED -->
+    <div class="real-card vip-front hidden" id="card-vip-front">
+        <div class="hologram-stripe"></div>
+        <div class="vip-header">
+            <div class="vip-shield" id="vip-shield-text">VIP</div>
+            <div class="vip-title" id="vip-title">GOLD VIP MEMBER</div>
+            <div class="vip-diamonds" id="vip-diamonds">💎💎💎💎💎💎💎</div>
+            <div class="vip-sub" id="vip-sub">MEMBERSHIP CARD</div>
+        </div>
+        <div class="vip-body">
+            <div class="photo-container vip-photo-wrap" id="vip-photoWrap">
+                <div class="vip-photo" id="vip-photoBox">
+                    <span class="vip-ph-placeholder">👤</span>
+                    <img id="vip-img" src="" alt="Photo">
+                    <input type="file" class="vip-file-input" accept="image/*" onchange="handlePhoto('vip', event)">
+                </div>
+                <button class="remove-photo-btn" onclick="removePhoto('vip', event)">×</button>
+            </div>
+            <div class="vip-info">
+                <div class="vip-info-block">
+                    <div class="vip-field-label">Member Name</div>
+                    <div class="vip-field-value" id="vip-name">Dean Lewis</div>
+                </div>
+                <div class="vip-info-block">
+                    <div class="vip-field-label">Member Since</div>
+                    <div class="vip-field-value" id="vip-since">2020</div>
+                </div>
+                <div class="vip-info-block">
+                    <div class="vip-field-label">Level</div>
+                    <div class="vip-field-value" id="vip-level">PLATINUM</div>
+                </div>
+            </div>
+        </div>
+        <div class="vip-footer">
+            <div class="vip-id-num" id="vip-idnum">GVIP-2026-001</div>
+            <div class="vip-issue-date" id="vip-date">Issued: 2026</div>
+        </div>
+    </div>
+
+    <!-- VIP BACK -->
+    <div class="real-card id-back hidden" id="card-vip-back" style="background: linear-gradient(180deg, #1a0f0a 0%, #2d1b0f 100%); color: #d4af37;">
+        <div class="id-back-magstripe" style="background: linear-gradient(180deg, #d4af37 0%, #f4e4ba 50%, #d4af37 100%);"></div>
+        <div class="id-back-content" style="margin-top: 38px;">
+            <div class="id-back-text" style="color: #d4af37; opacity: 0.8;">
+                <strong style="color: #f4e4ba;">EXCLUSIVE MEMBERSHIP PRIVILEGES</strong><br><br>
+                This card grants the bearer access to all VIP lounges, priority services, and exclusive events. 
+                Present this card at participating venues to receive premium treatment. 
+                Card remains property of the issuing organization and must be returned upon cancellation of membership.
+            </div>
+            <div style="margin-top: 10px; text-align: center;">
+                <div style="font-size: 22px; letter-spacing: 5px; font-weight: 900; color: #f4e4ba; margin-bottom: 3px;" id="vip-back-title">VIP ACCESS</div>
+                <div style="font-size: 8px; letter-spacing: 2px; opacity: 0.7;">MEMBERS ONLY • NO GUEST ADMITTANCE</div>
+            </div>
+            <div class="id-back-footer" style="margin-top: auto;">
+                <div class="id-qr-placeholder" style="background: rgba(212,175,55,0.2); border-color: #d4af37; color: #d4af37;">
+                    SCAN TO<br>VERIFY
+                </div>
+                <div class="id-contact-info" style="color: #d4af37; opacity: 0.8;">
+                    <strong style="color: #f4e4ba;">MEMBER SERVICES</strong><br>
+                    vip@goldmember.com<br>
+                    +1 (555) VIP-GOLD<br>
+                    Valid worldwide
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAN FRONT -->
+    <div class="real-card fan-front hidden" id="card-fan-front">
+        <div class="hologram-stripe"></div>
+        <div class="fan-header">
+            <div class="fan-title" id="fan-title">IL VOLO OFFICIAL FAN CARD</div>
+            <div class="fan-subtitle" id="fan-subtitle">PIERO BARONE PRIVATE VIP ACCESS<br>AUTHORIZATION PERMIT</div>
+        </div>
+        <div class="fan-body">
+            <div class="photo-container" id="fan-photoWrap">
+                <div class="fan-photo-box" id="fan-photoBox">
+                    <span class="fan-ph-placeholder">👤</span>
+                    <img id="fan-img" src="" alt="Photo">
+                    <input type="file" class="fan-file-input" accept="image/*" onchange="handlePhoto('fan', event)">
+                </div>
+                <button class="remove-photo-btn" onclick="removePhoto('fan', event)">×</button>
+            </div>
+            <div class="fan-details">
+                <div class="fan-row"><span class="fan-label">Name:</span> <span class="fan-value" id="fan-name">JANA KOCISOVA</span></div>
+                <div class="fan-row"><span class="fan-label">Country:</span> <span class="fan-value" id="fan-country">CZECH REPUBLIC</span></div>
+                <div class="fan-row"><span class="fan-label">Membership:</span> <span class="fan-value" id="fan-level">PRIVATE VIP</span></div>
+                <div class="fan-row"><span class="fan-label">Status:</span> <span class="fan-value" id="fan-status">ACTIVE</span></div>
+                <div class="fan-row"><span class="fan-label">Reg Date:</span> <span class="fan-value" id="fan-reg">12-06-2024</span></div>
+                <div class="fan-row"><span class="fan-label">Valid Till:</span> <span class="fan-value" id="fan-valid">12-06-2029</span></div>
+                <div class="fan-row"><span class="fan-label">I.D. No:</span> <span class="fan-value" id="fan-idnum">P/321-IL-7878</span></div>
+            </div>
+        </div>
+        <div class="fan-footer" id="fan-footer">
+            This certifies that the above named person is a registered member in good standing and is entitled to all rights, benefits and privileges thereto.
+        </div>
+    </div>
+
+    <!-- FAN BACK -->
+    <div class="real-card id-back hidden" id="card-fan-back">
+        <div class="id-back-magstripe"></div>
+        <div class="id-back-content" style="margin-top: 38px;">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <div style="font-size: 16px; font-weight: 900; color: #444; letter-spacing: 2px;" id="fan-back-title">OFFICIAL FAN CLUB</div>
+                <div style="font-size: 8px; color: #c00; font-weight: 700; margin-top: 2px;" id="fan-back-sub">AUTHORIZED MEMBER</div>
+            </div>
+            <div class="id-back-text" style="font-size: 7px;">
+                <strong>TERMS & CONDITIONS:</strong> This membership card is non-transferable and remains the property of the fan club. 
+                The bearer agrees to abide by all fan club rules and regulations. 
+                Misuse of this card will result in immediate termination of membership privileges. 
+                For lost or stolen cards, contact member services immediately.
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; align-items: flex-end;">
+                <div>
+                    <div style="font-size: 7px; color: #888; margin-bottom: 2px;">MEMBER SIGNATURE</div>
+                    <div style="font-family: 'Brush Script MT', cursive; font-size: 18px; color: #333; border-bottom: 1px solid #ccc; min-width: 90px; display: inline-block;" id="fan-back-sig">J. Kocisova</div>
+                </div>
+                <div class="id-qr-placeholder" style="width: 45px; height: 45px;">
+                    SCAN QR<br>TO VERIFY<br>MEMBERSHIP
+                </div>
+            </div>
+            <div style="margin-top: 6px; font-size: 6px; color: #888; text-align: center;">
+                www.fanclubofficial.com • support@fanclub.com • Member Hotline: +1 (555) 123-4567
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EDITOR -->
+<div class="editor-panel" id="editorPanel">
+    <h3 id="editorTitle">Edit Official ID Card</h3>
+
+    <div id="ctrl-official">
+        <div class="editor-group">
+            <label>Organization Name</label>
+            <input type="text" id="inp-off-org" value="REPUBLIC OF AMERICA" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Organization Subtitle</label>
+            <input type="text" id="inp-off-org-sub" value="National Identity Card" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Seal Text</label>
+            <input type="text" id="inp-off-seal" value="ID" maxlength="3" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Surname</label>
+            <input type="text" id="inp-off-surname" value="LEWIS" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Given Names</label>
+            <input type="text" id="inp-off-given" value="DEAN MICHAEL" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Date of Birth</label>
+            <input type="text" id="inp-off-dob" value="15 JUN 1993" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Sex (M/F)</label>
+            <input type="text" id="inp-off-sex" value="M" maxlength="1" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Nationality</label>
+            <input type="text" id="inp-off-nation" value="USA" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Place of Birth</label>
+            <input type="text" id="inp-off-pob" value="NEW YORK, NY" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Signature Text</label>
+            <input type="text" id="inp-off-sig" value="Dean Lewis" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>ID Number</label>
+            <input type="text" id="inp-off-idnum" value="ID-USA-2026-884192" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Date of Issue</label>
+            <input type="text" id="inp-off-issue" value="12 MAY 2026" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Date of Expiry</label>
+            <input type="text" id="inp-off-expiry" value="12 MAY 2036" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Issuing Authority</label>
+            <input type="text" id="inp-off-auth" value="IDLAND GOV" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Document Number</label>
+            <input type="text" id="inp-off-docnum" value="DL-2026-001" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Profile Photo</label>
+            <div class="upload-trigger" onclick="document.getElementById('off-file').click()">
+                <input type="file" id="off-file" accept="image/*" onchange="handlePhoto('off', event)">
+                <span class="up-icon">📷</span>
+                <span class="up-text">Choose from Gallery</span>
+                <span class="up-hint">Tap to upload photo</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="ctrl-vip" class="hidden">
+        <div class="editor-group">
+            <label>Shield Text</label>
+            <input type="text" id="inp-vip-shield" value="VIP" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Title</label>
+            <input type="text" id="inp-vip-title" value="GOLD VIP MEMBER" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Diamonds</label>
+            <input type="text" id="inp-vip-diamonds" value="💎💎💎💎💎💎💎" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Subtitle</label>
+            <input type="text" id="inp-vip-sub" value="MEMBERSHIP CARD" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Member Name</label>
+            <input type="text" id="inp-vip-name" value="Dean Lewis" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Member Since</label>
+            <input type="text" id="inp-vip-since" value="2020" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Level</label>
+            <input type="text" id="inp-vip-level" value="PLATINUM" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>ID Number</label>
+            <input type="text" id="inp-vip-idnum" value="GVIP-2026-001" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Issue Date</label>
+            <input type="text" id="inp-vip-date" value="Issued: 2026" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Profile Photo</label>
+            <div class="upload-trigger" onclick="document.getElementById('vip-file').click()">
+                <input type="file" id="vip-file" accept="image/*" onchange="handlePhoto('vip', event)">
+                <span class="up-icon">📷</span>
+                <span class="up-text">Choose from Gallery</span>
+                <span class="up-hint">Tap to upload photo</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="ctrl-fan" class="hidden">
+        <div class="editor-group">
+            <label>Card Title</label>
+            <input type="text" id="inp-fan-title" value="IL VOLO OFFICIAL FAN CARD" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Subtitle Line 1</label>
+            <input type="text" id="inp-fan-sub1" value="PIERO BARONE PRIVATE VIP ACCESS" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Subtitle Line 2</label>
+            <input type="text" id="inp-fan-sub2" value="AUTHORIZATION PERMIT" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Name</label>
+            <input type="text" id="inp-fan-name" value="JANA KOCISOVA" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Country</label>
+            <input type="text" id="inp-fan-country" value="CZECH REPUBLIC" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Membership Level</label>
+            <input type="text" id="inp-fan-level" value="PRIVATE VIP" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Status</label>
+            <input type="text" id="inp-fan-status" value="ACTIVE" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Reg Date</label>
+            <input type="text" id="inp-fan-reg" value="12-06-2024" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Valid Till</label>
+            <input type="text" id="inp-fan-valid" value="12-06-2029" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>I.D. Number</label>
+            <input type="text" id="inp-fan-idnum" value="P/321-IL-7878" oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Footer Text</label>
+            <input type="text" id="inp-fan-footer" value="This certifies that the above named person is a registered member in good standing and is entitled to all rights, benefits and privileges thereto." oninput="updateCard()">
+        </div>
+        <div class="editor-group">
+            <label>Profile Photo</label>
+            <div class="upload-trigger" onclick="document.getElementById('fan-file').click()">
+                <input type="file" id="fan-file" accept="image/*" onchange="handlePhoto('fan', event)">
+                <span class="up-icon">📷</span>
+                <span class="up-text">Choose from Gallery</span>
+                <span class="up-hint">Tap to upload photo</span>
+            </div>
+        </div>
+    </div>
+
+    <button class="action-btn primary" onclick="finalizeCard()">✓ Finalize Card (Hide Edit Buttons)</button>
+    <button class="action-btn success" onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<script>
+    let currentDesign = 'official';
+    let currentSide = 'front';
+
+    function switchDesign(design) {
+        currentDesign = design;
+        currentSide = 'front';
+        
+        document.querySelectorAll('.design-chip').forEach(c => c.classList.remove('active'));
+        document.querySelector(`.design-chip.${design}`).classList.add('active');
+        
+        document.querySelectorAll('.real-card').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`card-${design}-front`).classList.remove('hidden');
+        document.getElementById(`card-${design}-back`).classList.add('hidden');
+        
+        document.querySelectorAll('.flip-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === 0);
+        });
+        
+        document.querySelectorAll('[id^="ctrl-"]').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`ctrl-${design}`).classList.remove('hidden');
+        
+        const titles = {
+            'official': 'Edit Official ID Card',
+            'vip': 'Edit Gold VIP Card',
+            'fan': 'Edit Fan Club Card'
+        };
+        document.getElementById('editorTitle').textContent = titles[design];
+    }
+
+    function showSide(side) {
+        currentSide = side;
+        document.querySelectorAll('.flip-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', (i === 0 && side === 'front') || (i === 1 && side === 'back'));
+        });
+        
+        const front = document.getElementById(`card-${currentDesign}-front`);
+        const back = document.getElementById(`card-${currentDesign}-back`);
+        
+        if (side === 'front') {
+            front.classList.remove('hidden');
+            back.classList.add('hidden');
+        } else {
+            front.classList.add('hidden');
+            back.classList.remove('hidden');
+        }
+    }
+
+    function handlePhoto(prefix, event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById(`${prefix}-img`).src = e.target.result;
+            document.getElementById(`${prefix}-photoBox`).classList.add('has-image');
+            document.getElementById(`${prefix}-photoWrap`).classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removePhoto(prefix, event) {
+        event.stopPropagation();
+        document.getElementById(`${prefix}-img`).src = '';
+        document.getElementById(`${prefix}-photoBox`).classList.remove('has-image');
+        document.getElementById(`${prefix}-photoWrap`).classList.remove('has-image');
+        document.querySelectorAll(`#${prefix}-photoBox input, #${prefix}-file`).forEach(i => i.value = '');
+    }
+
+    function updateCard() {
+        document.getElementById('off-org').textContent = document.getElementById('inp-off-org').value;
+        document.getElementById('off-org-sub').textContent = document.getElementById('inp-off-org-sub').value;
+        document.getElementById('off-seal').textContent = document.getElementById('inp-off-seal').value;
+        document.getElementById('off-surname').textContent = document.getElementById('inp-off-surname').value;
+        document.getElementById('off-given').textContent = document.getElementById('inp-off-given').value;
+        document.getElementById('off-dob').textContent = document.getElementById('inp-off-dob').value;
+        document.getElementById('off-sex').textContent = document.getElementById('inp-off-sex').value;
+        document.getElementById('off-nation').textContent = document.getElementById('inp-off-nation').value;
+        document.getElementById('off-pob').textContent = document.getElementById('inp-off-pob').value;
+        document.getElementById('off-sig').textContent = document.getElementById('inp-off-sig').value;
+        document.getElementById('off-idnum').textContent = document.getElementById('inp-off-idnum').value;
+        document.getElementById('off-issue').textContent = document.getElementById('inp-off-issue').value;
+        document.getElementById('off-expiry').textContent = document.getElementById('inp-off-expiry').value;
+        document.getElementById('off-auth').textContent = document.getElementById('inp-off-auth').value;
+        document.getElementById('off-docnum').textContent = document.getElementById('inp-off-docnum').value;
+
+        document.getElementById('vip-shield-text').textContent = document.getElementById('inp-vip-shield').value;
+        document.getElementById('vip-title').textContent = document.getElementById('inp-vip-title').value;
+        document.getElementById('vip-diamonds').textContent = document.getElementById('inp-vip-diamonds').value;
+        document.getElementById('vip-sub').textContent = document.getElementById('inp-vip-sub').value;
+        document.getElementById('vip-name').textContent = document.getElementById('inp-vip-name').value;
+        document.getElementById('vip-since').textContent = document.getElementById('inp-vip-since').value;
+        document.getElementById('vip-level').textContent = document.getElementById('inp-vip-level').value;
+        document.getElementById('vip-idnum').textContent = document.getElementById('inp-vip-idnum').value;
+        document.getElementById('vip-date').textContent = document.getElementById('inp-vip-date').value;
+
+        document.getElementById('fan-title').textContent = document.getElementById('inp-fan-title').value;
+        const sub1 = document.getElementById('inp-fan-sub1').value;
+        const sub2 = document.getElementById('inp-fan-sub2').value;
+        document.getElementById('fan-subtitle').innerHTML = sub1 + '<br>' + sub2;
+        document.getElementById('fan-name').textContent = document.getElementById('inp-fan-name').value;
+        document.getElementById('fan-country').textContent = document.getElementById('inp-fan-country').value;
+        document.getElementById('fan-level').textContent = document.getElementById('inp-fan-level').value;
+        document.getElementById('fan-status').textContent = document.getElementById('inp-fan-status').value;
+        document.getElementById('fan-reg').textContent = document.getElementById('inp-fan-reg').value;
+        document.getElementById('fan-valid').textContent = document.getElementById('inp-fan-valid').value;
+        document.getElementById('fan-idnum').textContent = document.getElementById('inp-fan-idnum').value;
+        document.getElementById('fan-footer').textContent = document.getElementById('inp-fan-footer').value;
+    }
+
+    function finalizeCard() {
+        document.querySelectorAll('.real-card').forEach(card => card.classList.add('print-ready'));
+        const btn = event.target;
+        const original = btn.textContent;
+        btn.textContent = '✓ Card Finalized - Ready to Print';
+        btn.style.background = '#28a745';
+        setTimeout(() => {
+            btn.textContent = original;
+            btn.style.background = '';
+        }, 3000);
+    }
+
+    updateCard();
+</script>
+
+</body>
+</html>
